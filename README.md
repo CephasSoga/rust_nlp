@@ -1,5 +1,5 @@
 Analyzing trends and patterns in text data involves several steps, from preprocessing to deriving insights. This project aims to provide a structured approach to follow.
-This is  a pure **Rust** project driven the need of a fast and efficient NLP tool.
+This is  a pure **Rust** project driven by the need of a fast and efficient NLP tool.
 
 
 

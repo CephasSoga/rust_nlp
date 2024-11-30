@@ -5,6 +5,7 @@
 
 mod local;
 mod topic;
+mod pattern;
 
 use std::env;
 use std::clone::Clone;
