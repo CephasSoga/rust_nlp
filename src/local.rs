@@ -1,3 +1,31 @@
+//! # Local Model
+//! 
+//! A local model for sentiment analysis. 
+//! 
+//! Loads distilbert-base-uncased-finetuned-sst-2-english model from local files.
+//! 
+//! The model and all config files can be found at on the HuggingFace plateform.
+//! 
+//! The model and all config files are expected to be in the `models` folder.
+//! 
+//! This moduile uses the Rust-BERT crate to load the model.
+//! 
+//! ## Features
+//!
+//! - Sentiment analysis
+//! 
+//! ## Examples
+//! 
+//! ```
+//! let model = ModelBuilder::new(ModelConfig::new("models/rust_model.ot", "models/config.json", "models/vocab.txt")).build_wrapper().unwrap();
+//! let results = model.process(&["I love Rust!", "Rust is a great language!"]);
+//! ```
+//! 
+//! ## References
+//! 
+//! - [Rust-BERT](https://github.com/guillaume-be/rust-bert)
+//! - [DistilBERT](https://huggingface.co/distilbert-base-uncased-finetuned-sst-2-english)
+
 #![allow(warnings)]
 #![allow(unused_imports)]
 #![allow(unused_variables)]

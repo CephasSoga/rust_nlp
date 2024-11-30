@@ -1,3 +1,26 @@
+//! # Topic Model
+//! 
+//! A topic model for clustering documents.
+//! 
+//! ## Features
+//! 
+//! - Clustering documents into topics
+//! - Computing the bag of words for a document
+//! - Computing the TF-IDF for a document
+//! 
+//! ## Examples
+//! 
+//! ```
+//! let mut model = TopicModel::new();
+//! let clusters = model.fit(TopicModelConfig::new(vec!["Rust is a great programming language!", "Rust is a great language!"], Some(3), Some(5)));
+//! ```
+//! 
+//! ## References
+//! 
+//! - [TF-IDF](https://en.wikipedia.org/wiki/Tf%E2%80%93idf)
+//! - [K-Means](https://en.wikipedia.org/wiki/K-means_clustering)
+
+
 #![allow(warnings)]
 #![allow(unused_imports)]
 #![allow(unused_variables)]

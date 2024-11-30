@@ -6,6 +6,7 @@
 mod local;
 mod topic;
 mod pattern;
+mod network;
 
 use std::env;
 use std::clone::Clone;
@@ -24,6 +25,7 @@ use rust_bert::pipelines::sentiment::{SentimentModel, Sentiment, SentimentPolari
 
 use local::{ModelWrapper, ModelConfig, ContentPolarity, ModelBuilder};
 use topic::{TopicModel, TopicModelConfig};
+use network::{HybridNetwork, Network};
 
 #[derive(Debug, Clone, Copy)]
 /// The polarity of a piece of content.
@@ -376,5 +378,33 @@ async fn main() {
         let clusters = topic_model.fit(TopicModelConfig::new(texts, None, None));
         // Print the clusters
         println!("{:?}", clusters);
+    });
+
+    // Time the network analysis
+    time_it!("Network analysis", {
+        // Initialize the network
+        let mut network = Network::new();
+        // Add nodes to the network
+        network.add_node(0, "Start".to_string());
+        network.add_node(1, "End".to_string());
+        network.add_edge(0, 1, 1.0);
+        // Find the shortest path
+        let path = network.shortest_path(0, 1);
+        println!("{:?}", path);
+    });
+
+    time_it!("Hybrid network analysis", {
+        // Initialize the hybrid network
+        let mut hybrid_network = HybridNetwork::new(4);
+        // Add nodes to the network
+        hybrid_network.add_node(0, "Start".to_string());
+        hybrid_network.add_node(1, "End".to_string());
+        hybrid_network.add_edge(0, 1, 1.0);
+        // Find the shortest path
+        let path = hybrid_network.shortest_path(0, 1);
+        println!("{:?}", path);
+
+        let bfs_path = hybrid_network.bfs(1);
+        println!("{:?}", bfs_path);
     });
 }
