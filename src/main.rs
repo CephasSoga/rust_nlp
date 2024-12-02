@@ -7,6 +7,7 @@ mod local;
 mod topic;
 mod pattern;
 mod network;
+mod word2vec;
 
 use std::env;
 use std::clone::Clone;
@@ -26,6 +27,7 @@ use rust_bert::pipelines::sentiment::{SentimentModel, Sentiment, SentimentPolari
 use local::{ModelWrapper, ModelConfig, ContentPolarity, ModelBuilder};
 use topic::{TopicModel, TopicModelConfig};
 use network::{HybridNetwork, Network};
+use word2vec::{MultiThreadWord2Vec, single_thread_example, multi_thread_example, from_file_example};
 
 #[derive(Debug, Clone, Copy)]
 /// The polarity of a piece of content.
@@ -341,70 +343,15 @@ macro_rules! time_it {
 #[tokio::main]
 /// The main function.
 async fn main() {
-        // Load environment variables from .env file
-        dotenv().ok();
-        // Initialize the model config arguments
-        let model_path = "models/rust_model.ot".to_string();
-        let config_path = "models/config.json".to_string();
-        let vocab_path = "models/vocab.txt".to_string();
-        // build the model wrapper with the builder
-        let model = ModelBuilder::new(
-            ModelConfig::new(model_path, config_path, vocab_path)
-        )
-        .build_wrapper()
-        .unwrap();
-
-    let texts = vec![
-        String::from("I am a happy person. I am learning Rust. It is fun and challenging. This is a message to me"),
-        String::from("Graphical models are a powerful tool for modeling complex systems. They are used in a wide range of applications, from natural language processing to computer vision."),
-        String::from("The future of AI is exciting. I am looking forward to see what new applications will emerge in the future."),
-    ];
-    // Time the sentiment analysis
-    time_it!("Sentiment analysis", {
-        // Initialize the sentiment wrapper
-        let mut sentiment = SentimentWrapper::new(texts[0].clone(), None, None);
-        // Analyze the sentiment of the content
-        sentiment.analyze(&model).await.unwrap();
-        // Print the sentiment
-        println!("{:?}", sentiment);
-
-    });
-
-    // Time the topic modeling
-    time_it!("Topic modeling", {
-        // Initialize the topic model
-        let topic_model = TopicModel::new();
-        // Fit the topic model
-        let clusters = topic_model.fit(TopicModelConfig::new(texts, None, None));
-        // Print the clusters
-        println!("{:?}", clusters);
-    });
-
-    // Time the network analysis
-    time_it!("Network analysis", {
-        // Initialize the network
-        let mut network = Network::new();
-        // Add nodes to the network
-        network.add_node(0, "Start".to_string());
-        network.add_node(1, "End".to_string());
-        network.add_edge(0, 1, 1.0);
-        // Find the shortest path
-        let path = network.shortest_path(0, 1);
-        println!("{:?}", path);
-    });
-
-    time_it!("Hybrid network analysis", {
-        // Initialize the hybrid network
-        let mut hybrid_network = HybridNetwork::new(4);
-        // Add nodes to the network
-        hybrid_network.add_node(0, "Start".to_string());
-        hybrid_network.add_node(1, "End".to_string());
-        hybrid_network.add_edge(0, 1, 1.0);
-        // Find the shortest path
-        let path = hybrid_network.shortest_path(0, 1);
-        println!("{:?}", path);
-
-        let bfs_path = hybrid_network.bfs(1);
-        println!("{:?}", bfs_path);
+    //# Uncomment the following line to run the multi-threaded Word2Vec example
+    //time_it!("Multi thread Word2Vec example", {
+    //    multi_thread_example();
+    //});
+    //# Uncomment the following line to run the single-threaded Word2Vec example
+    //time_it!("Single thread Word2Vec example", {
+    //    single_thread_example();
+    //});
+    time_it!("Word2Vec from file example", {
+        from_file_example(None);
     });
 }

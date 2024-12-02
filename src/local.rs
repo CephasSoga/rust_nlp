@@ -6,6 +6,13 @@
 //! 
 //! The model and all config files can be found at on the HuggingFace plateform.
 //! 
+//! Download the model and config files from the HuggingFace plateform [here](https://huggingface.co/distilbert-base-uncased-finetuned-sst-2-english) and put them in the `models` subfolder of the project.
+//! 
+//! Files to download:
+//! - rust_model.ot
+//! - config.json
+//! - vocab.txt
+//! 
 //! The model and all config files are expected to be in the `models` folder.
 //! 
 //! This moduile uses the Rust-BERT crate to load the model.
@@ -58,6 +65,11 @@ impl ContentPolarity {
     /// # Arguments
     /// 
     /// * `candidate` - The `SentimentPolarity` to convert.
+    /// 
+    /// # Returns
+    /// 
+    /// * `ContentPolarity::Positive` - The content is positive.
+    /// * `ContentPolarity::Negative` - The content is negative.
     pub fn from_candidate(candidate: &SentimentPolarity) -> Self {
         match candidate {
             SentimentPolarity::Positive => ContentPolarity::Positive,
@@ -84,6 +96,12 @@ pub struct ContentPolarityCandidate {
 /// 
 /// * `content` - The content to analyze.
 /// * `polarity` - The polarity of the content.
+/// 
+/// # Examples
+/// 
+/// ```
+/// let result = ParseResult { content: "I love Rust!".to_string(), polarity: ContentPolarityCandidate { label: ContentPolarity::Positive, score: 0.95 } };
+/// ```
 pub struct ParseResult {
     pub content: String,
     pub polarity: ContentPolarityCandidate,
@@ -96,6 +114,13 @@ pub struct ParseResult {
 /// * `model_path` - The path to the model.
 /// * `config_path` - The path to the config.
 /// * `vocab_path` - The path to the vocab.
+/// 
+/// # Examples
+/// 
+/// ```
+/// let config = ModelConfig::new("models/rust_model.ot".to_string(), "models/config.json".to_string(), "models/vocab.txt".to_string());
+/// config.load();
+/// ```
 pub struct ModelConfig {
     model_path: String,
     config_path: String,
@@ -113,7 +138,7 @@ impl ModelConfig {
         Self { model_path, config_path, vocab_path }
     }
 
-    /// Load the model.
+    /// Loads the model.
     /// 
     /// # Returns
     /// 
@@ -135,6 +160,13 @@ impl ModelConfig {
 /// # Fields
 /// 
 /// * `model` - The loaded model.
+/// 
+/// # Examples
+/// 
+/// ```
+/// let model = ModelWrapper::new(base_model);
+/// model.process(&["I love Rust!", "Rust is a great language!"]);
+/// ```
 pub struct ModelWrapper {
     model: SentimentModel,
 }
@@ -144,26 +176,38 @@ impl ModelWrapper {
     /// # Arguments
     /// 
     /// * `model` - The loaded model.
+    /// 
+    /// # Returns
+    /// 
+    /// * `ModelWrapper` - The new model wrapper.
     pub fn new(model: SentimentModel) -> Self {
         Self { model }
     }
 
-    /// Process the text.
+    /// Processes the text.
     /// 
     /// # Arguments
     /// 
     /// * `text` - The text to process.
+    /// 
+    /// # Returns
+    /// 
+    /// * `Vec<Sentiment>` - The processed text.
     pub fn process(&self, text: &[&str]) -> Vec<Sentiment> {
         let output = self.model.predict(text);
         output
     }
 
-    /// Parse the output of the model.
+    /// Parses the output of the model.
     /// 
     /// # Arguments
     /// 
     /// * `texts` - The texts to parse.
     /// * `output` - The output of the model.
+    /// 
+    /// # Returns
+    /// 
+    /// * `Vec<ParseResult>` - The parsed results.
     pub fn parse(&self, texts: &[&str], output: Vec<Sentiment>) -> Vec<ParseResult> {
         let mut results = Vec::new();
         for (i, sentiment) in output.iter().enumerate() {
@@ -185,6 +229,12 @@ impl ModelWrapper {
 /// 
 /// * `model_config` - The configuration for the model.
 /// 
+/// # Examples
+/// 
+/// ```
+/// let builder = ModelBuilder::new(config);
+/// builder.build_wrapper();
+/// ```
 pub struct ModelBuilder {
     model_config: ModelConfig,
 }
@@ -194,12 +244,16 @@ impl ModelBuilder {
     /// # Arguments
     /// 
     /// * `model_config` - The configuration for the model.
+    /// 
+    /// # Returns
+    /// 
+    /// * `ModelBuilder` - The new model builder.
     pub fn new(model_config: ModelConfig) -> Self {
         Self { model_config }
    
     }
 
-    /// Build the model wrapper.
+    /// Builds the model wrapper.
     /// 
     /// # Returns
     /// 

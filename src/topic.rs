@@ -625,7 +625,7 @@ impl TopicModel {
 
 
 /// Example usage
-fn main() {
+pub fn example() {
     // Create the preprocessor
     let preprocessor = Preprocessor::new();
 

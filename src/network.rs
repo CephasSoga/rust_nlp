@@ -260,12 +260,12 @@ impl PartialOrd for State {
 /// ```
 pub struct HybridNetwork {
     // Fast lookup matrix for constant-time edge checks
-    lookup: Vec<Vec<Option<f64>>>,
+    pub lookup: Vec<Vec<Option<f64>>>,
     // Detailed edge information for additional data
-    edges: HashMap<usize, Vec<Edge>>,
+    pub edges: HashMap<usize, Vec<Edge>>,
     // Node storage remains the same
-    nodes: HashMap<usize, Node>,
-    size: usize,
+    pub nodes: HashMap<usize, Node>,
+    pub size: usize,
 }
 
 impl HybridNetwork {
@@ -775,7 +775,7 @@ impl Network {
     
 
 
-fn main() {
+pub fn example() {
 
     // ###Hybrid Network###
     let mut network = HybridNetwork::new(4);
