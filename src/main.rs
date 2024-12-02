@@ -351,7 +351,11 @@ async fn main() {
     //time_it!("Single thread Word2Vec example", {
     //    single_thread_example();
     //});
-    time_it!("Word2Vec from file example", {
-        from_file_example(None);
+    //time_it!("Word2Vec from file example", {
+    //    from_file_example(None);
+    //});
+
+    time_it!("Network analysis", {
+        network::example();
     });
 }

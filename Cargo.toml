@@ -19,3 +19,6 @@ fastrand = "2.0"        # Fast random number generator
 rayon = "1.10.0"        # Parallel execution library for Rust
 indicatif = "0.17"      # Progress bar library for Rust
 num_cpus = "1.16"       # For getting number of CPU cores
+plotters = "0.3"        # Plotting library for Rust
+eframe = "0.29.0"       # egui framework
+egui_plot = "0.29.0"      # plotting support for egui

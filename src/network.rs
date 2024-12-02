@@ -67,8 +67,14 @@
 #![allow(unused_variables)]
 #![allow(dead_code)]
 
+use std::error::Error;
+
 use std::collections::{HashMap, HashSet, VecDeque, BinaryHeap};
 use std::cmp::Ordering;
+
+use plotters::prelude::*;
+use eframe::egui;
+use egui_plot::{Plot, Points, Line, PlotPoints};
 
 #[derive(Debug, Clone)]
 /// A node in the network
@@ -121,12 +127,17 @@ struct State {
 }
 
 impl PartialEq for State {
-    /// Compares two State structs for equality
+    /// Compares two State structs for equality.
     /// 
     /// # Parameters
     /// 
     /// * other: &Self
-    /// The other State struct to compare with
+    /// The other State struct to compare with.
+    /// 
+    /// # Returns
+    /// 
+    /// * bool
+    /// True if the two State structs are equal, false otherwise.
     fn eq(&self, other: &Self) -> bool {
         self.cost == other.cost && self.node == other.node
     }
@@ -136,12 +147,17 @@ impl Eq for State {}
 
 // Custom ordering for our priority queue
 impl Ord for State {
-    /// Compares two State structs for ordering
+    /// Compares two State structs for ordering.
     /// 
     /// # Parameters
     /// 
     /// * other: &Self
-    /// The other State struct to compare with
+    /// The other State struct to compare with.
+    /// 
+    /// # Returns
+    /// 
+    /// * Ordering
+    /// The ordering of the two State structs.
     fn cmp(&self, other: &Self) -> Ordering {
         self.cost.partial_cmp(&other.cost)
             .unwrap_or(Ordering::Equal)
@@ -150,12 +166,17 @@ impl Ord for State {
 }
 
 impl PartialOrd for State {
-    /// Compares two State structs for partial ordering
+    /// Compares two State structs for partial ordering.
     /// 
     /// # Parameters
     /// 
     /// * other: &Self
-    /// The other State struct to compare with  
+    /// The other State struct to compare with.
+    /// 
+    /// # Returns
+    /// 
+    /// * Option<Ordering>
+    /// The partial ordering of the two State structs.
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
@@ -269,12 +290,17 @@ pub struct HybridNetwork {
 }
 
 impl HybridNetwork {
-    /// Creates a new network with the given size
+    /// Creates a new network with the given size.
     /// 
     /// # Parameters
     /// 
     /// * size: usize
-    /// The size of the network
+    /// The size of the network.
+    /// 
+    /// # Returns
+    /// 
+    /// * Self
+    /// The new network.
     pub fn new(size: usize) -> Self {
         HybridNetwork {
             lookup: vec![vec![None; size]; size],
@@ -284,12 +310,17 @@ impl HybridNetwork {
         }
     }
 
-    /// Ensures the lookup matrix has space for the given node id
+    /// Ensures the lookup matrix has space for the given node id.
     /// 
     /// # Parameters
     /// 
     /// * id: usize
-    /// The id of the node
+    /// The id of the node.
+    /// 
+    /// # Returns
+    /// 
+    /// * Self
+    /// The updated network.
     pub fn ensure_capacity(&mut self, id: usize) {
         // If the id is greater than the current size, resize the lookup matrix
         if id >= self.size {
@@ -311,10 +342,15 @@ impl HybridNetwork {
     /// # Parameters
     /// 
     /// * id: usize
-    /// The id of the node
+    /// The id of the node.
     /// 
     /// * data: String
-    /// The data associated with the node   
+    /// The data associated with the node.
+    /// 
+    /// # Returns
+    /// 
+    /// * Self
+    /// The updated network.
     pub fn add_node(&mut self, id: usize, data: String) {
         self.ensure_capacity(id);
         self.nodes.insert(id, Node { id, data });
@@ -326,13 +362,18 @@ impl HybridNetwork {
     /// # Parameters
     /// 
     /// * from: usize
-    /// The id of the starting node
+        /// The id of the starting node.
     /// 
     /// * to: usize
-    /// The id of the ending node
+    /// The id of the ending node.
     /// 
     /// * weight: f64
-    /// The weight of the edge
+    /// The weight of the edge.
+    /// 
+    /// # Returns
+    /// 
+    /// * Self
+    /// The updated network.
     pub fn add_edge(&mut self, from: usize, to: usize, weight: f64) {
         self.ensure_capacity(from.max(to));
         // Update fast lookup matrix
@@ -352,10 +393,15 @@ impl HybridNetwork {
     /// # Parameters
     /// 
     /// * from: usize
-    /// The id of the starting node
+    /// The id of the starting node.
     /// 
     /// * to: usize
-    /// The id of the ending node
+    /// The id of the ending node.
+    /// 
+    /// # Returns
+    /// 
+    /// * Option<f64>
+    /// The weight of the edge from node `from` to node `to`.
     pub fn get_weight(&self, from: usize, to: usize) -> Option<f64> {
         // Check if the ids are within the bounds of the lookup matrix
         if from < self.size && to < self.size {
@@ -370,7 +416,12 @@ impl HybridNetwork {
     /// # Parameters
     /// 
     /// * from: usize
-    /// The id of the starting node
+        /// The id of the starting node.
+    /// 
+    /// # Returns
+    /// 
+    /// * Option<&Vec<Edge>>
+    /// The detailed edge information for the node.
     pub fn get_edge_details(&self, from: usize) -> Option<&Vec<Edge>> {
         self.edges.get(&from)
     }
@@ -380,7 +431,12 @@ impl HybridNetwork {
     /// # Parameters
     /// 
     /// * start: usize
-    /// The id of the starting node
+    /// The id of the starting node.
+    /// 
+    /// # Returns
+    /// 
+    /// * Vec<usize>
+    /// The BFS traversal order.
     pub fn bfs(&self, start: usize) -> Vec<usize> {
         let mut visited = HashSet::new();
         let mut queue = VecDeque::new();
@@ -404,15 +460,20 @@ impl HybridNetwork {
         result
     }
 
-    /// Dijkstra's algorithm with a priority queue
+    /// Dijkstra's algorithm with a priority queue.
     /// 
     /// # Parameters
     /// 
     /// * start: usize
-    /// The id of the starting node
+    /// The id of the starting node.    
     /// 
     /// * end: usize
-    /// The id of the ending node   
+    /// The id of the ending node.
+    /// 
+    /// # Returns
+    /// 
+    /// * Option<(Vec<usize>, f64)>
+    /// The shortest path and its distance between nodes `start` and `end`.
     pub fn shortest_path(&self, start: usize, end: usize) -> Option<(Vec<usize>, f64)> {
         // Initialize distance and previous maps
         let mut distances: HashMap<usize, f64> = HashMap::new();
@@ -470,12 +531,17 @@ impl HybridNetwork {
         Some((path, *distances.get(&end)?))
     }
 
-    /// Removes a node and all its associated edges
+    /// Removes a node and all its associated edges.
     /// 
     /// # Parameters
     /// 
     /// * id: usize
-    /// The id of the node
+    /// The id of the node.
+    /// 
+    /// # Returns
+    /// 
+    /// * Option<Node>
+    /// The removed node.
     pub fn remove_node(&mut self, id: usize) -> Option<Node> {
         if id >= self.size {
             return None;
@@ -497,7 +563,7 @@ impl HybridNetwork {
         self.nodes.remove(&id)
     }
 
-    /// Removes an edge between two nodes
+    /// Removes an edge between two nodes.
     /// 
     /// # Parameters
     /// 
@@ -505,7 +571,12 @@ impl HybridNetwork {
     /// The id of the starting node
     /// 
     /// * to: usize
-    /// The id of the ending node
+    /// The id of the ending node.
+    /// 
+    /// # Returns
+    /// 
+    /// * Option<Edge>
+    /// The removed edge.
     pub fn remove_edge(&mut self, from: usize, to: usize) -> Option<Edge> {
         if from >= self.size || to >= self.size {
             return None;
@@ -523,12 +594,17 @@ impl HybridNetwork {
         }
     }
 
-    /// Returns all neighbors of a node
+    /// Returns all neighbors of a node.
     /// 
     /// # Parameters
     /// 
     /// * id: usize
-    /// The id of the node  
+    /// The id of the node.
+    /// 
+    /// # Returns
+    /// 
+    /// * Vec<usize>
+    /// The neighbors of the node.
     pub fn get_neighbors(&self, id: usize) -> Vec<usize> {
         // Check if the id is within the bounds of the lookup matrix
         if id >= self.size {
@@ -543,12 +619,21 @@ impl HybridNetwork {
             .collect()
     }
 
-    /// Returns the degree of a node (number of outgoing edges)
+    /// Returns the degree of a node (number of outgoing edges).
     /// 
     /// # Parameters
     /// 
     /// * id: usize
-    /// The id of the node
+    /// The id of the node.
+    /// 
+    /// # Returns
+    /// 
+    /// * usize
+    /// The degree of the node.
+    /// 
+    /// # Notes
+    /// 
+    /// * This method is O(n) where n is the number of nodes in the network.
     pub fn degree(&self, id: usize) -> usize {
         if id >= self.size {
             return 0;
@@ -556,15 +641,20 @@ impl HybridNetwork {
         self.lookup[id].iter().filter(|&&x| x.is_some()).count()
     }
 
-    /// Checks if there exists a path between two nodes
+    /// Checks if there exists a path between two nodes.
     /// 
     /// # Parameters
     /// 
     /// * start: usize
-    /// The id of the starting node
+    /// The id of the starting node.
     /// 
     /// * end: usize
-    /// The id of the ending node
+    /// The id of the ending node.
+    /// 
+    /// # Returns
+    /// 
+    /// * bool
+    /// True if there exists a path between the two nodes, false otherwise.
     pub fn has_path(&self, start: usize, end: usize) -> bool {
         if start >= self.size || end >= self.size {
             return false;
@@ -595,12 +685,17 @@ impl HybridNetwork {
     }
 
     /// Returns the strongly connected component containing the given node
-    /// using Kosaraju's algorithm (simplified version for demonstration)
+    /// using Kosaraju's algorithm (simplified version for demonstration).
     /// 
     /// # Parameters
     /// 
     /// * start: usize
-    /// The id of the starting node
+    /// The id of the starting node.
+    /// 
+    /// # Returns
+    /// 
+    /// * HashSet<usize>
+    /// The strongly connected component containing the given node. 
     pub fn get_connected_component(&self, start: usize) -> HashSet<usize> {
         // Initialize the component set
         let mut component = HashSet::new();
@@ -628,30 +723,232 @@ impl HybridNetwork {
 
         component
     }
+
+    pub fn static_plot(&self, output_file: &str) -> Result<(), Box<dyn Error>> {
+        let root = BitMapBackend::new(output_file, (800, 600)).into_drawing_area();
+        root.fill(&WHITE)?;
+
+        let mut chart = ChartBuilder::on(&root)
+            .build_cartesian_2d(0f64..800f64, 0f64..600f64)?;
+
+        let nodes: Vec<(f64, f64)> = (0..self.size)
+            .map(|_| (
+                fastrand::f64() * 700.0 + 50.0,
+                fastrand::f64() * 500.0 + 50.0
+            ))
+            .collect();
+
+        // Draw edges with chart context
+        for i in 0..self.size {
+            for j in 0..self.size {
+                if let Some(weight) = self.lookup[i][j] {
+                    let color = if weight > 0.5 { RED } else { BLUE };
+                    chart.plotting_area().draw(&PathElement::new(
+                        vec![(nodes[i].0, nodes[i].1), (nodes[j].0, nodes[j].1)],
+                        color.mix(0.5),
+                    ))?;
+                }
+            }
+        }
+
+        // Draw nodes with chart context
+        for (i, (x, y)) in nodes.iter().enumerate() {
+            chart.plotting_area().draw(&Circle::new(
+                (*x, *y),
+                5,
+                ShapeStyle::from(&BLACK).filled(),
+            ))?;
+            
+            if let Some(node) = self.nodes.get(&i) {
+                chart.plotting_area().draw(&Text::new(
+                    node.data.clone(),
+                    (*x + 10.0, *y),
+                    ("sans-serif", 15).into_font(),
+                ))?;
+            }
+        }
+
+        Ok(())
+    }
+
+    pub fn show_interactive(&self) -> Result<(), eframe::Error> {
+        let options = eframe::NativeOptions {
+            viewport: egui::ViewportBuilder::default()
+                .with_inner_size([800.0, 600.0]),
+            ..Default::default()
+        };
+
+        eframe::run_native(
+            "Network Visualization",
+            options,
+            Box::new(|_cc| Ok(Box::new(NetworkVisualizer::new(self))))
+        )
+    }
 }
 
 
+/// A visualizer for the HybridNetwork struct.
+/// 
+/// # Attributes
+/// 
+/// * network: &'a HybridNetwork
+/// The network to visualize.
+/// 
+/// * node_positions: HashMap<usize, [f64; 2]>
+/// The positions of the nodes.
+/// 
+/// * selected_node: Option<usize>
+/// The id of the selected node.
+/// 
+/// * dragging: Option<usize>
+/// The id of the node being dragged.
+struct NetworkVisualizer<'a> {
+    network: &'a HybridNetwork,
+    node_positions: HashMap<usize, [f64; 2]>,
+    selected_node: Option<usize>,
+    dragging: Option<usize>,
+}
+
+impl<'a> NetworkVisualizer<'a> {
+    fn new(network: &'a HybridNetwork) -> Self {
+        let mut node_positions = HashMap::new();
+        for i in 0..network.size {
+            node_positions.insert(i, [
+                fastrand::f64() * 700.0 + 50.0,
+                fastrand::f64() * 500.0 + 50.0
+            ]);
+        }
+        Self {
+            network,
+            node_positions,
+            selected_node: None,
+            dragging: None,
+        }
+    }
+}
+
+impl<'a> eframe::App for NetworkVisualizer<'a> {
+    /// Updates the network visualizer.
+    /// 
+    /// # Parameters
+    /// 
+    /// * ctx: &egui::Context
+    /// The context of the application.
+    /// 
+    /// * _frame: &mut eframe::Frame
+    /// The frame of the application.
+    /// 
+    /// # Returns
+    /// 
+    /// * ()
+    /// The updated network visualizer. 
+    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        egui::CentralPanel::default().show(ctx, |ui| {
+            let input = ui.input(|i| i.clone());
+            
+            let plot = Plot::new("network_plot")
+                .allow_drag(false)
+                .allow_zoom(true)
+                .include_y(0.0)
+                .include_y(600.0)
+                .include_x(0.0)
+                .include_x(800.0);
+
+            // Track if we clicked near any node
+            let mut clicked_node = None;
+
+            plot.show(ui, |plot_ui| {
+                // Draw edges first
+                for i in 0..self.network.size {
+                    for j in 0..self.network.size {
+                        if let Some(weight) = self.network.lookup[i][j] {
+                            if let (Some(start), Some(end)) = (
+                                self.node_positions.get(&i),
+                                self.node_positions.get(&j)
+                            ) {
+                                let line = Line::new(PlotPoints::new(vec![
+                                    [start[0], start[1]],
+                                    [end[0], end[1]],
+                                ])).width(if weight > 0.5 { 2.0 } else { 1.0 });
+                                plot_ui.line(line);
+                            }
+                        }
+                    }
+                }
+
+                // Draw nodes and handle interaction
+                if let Some(pointer_pos) = input.pointer.latest_pos() {
+                    if let Some(plot_pos) = plot_ui.pointer_coordinate() {
+                        for (i, pos) in &mut self.node_positions {
+                            // Draw the node
+                            let points = Points::new(vec![[pos[0], pos[1]]])
+                                .radius(5.0)
+                                .color(if Some(*i) == self.selected_node {
+                                    egui::Color32::RED
+                                } else {
+                                    egui::Color32::BLUE
+                                });
+                            plot_ui.points(points);
+
+                            // Check for clicks near this node
+                            let dist = ((plot_pos.x - pos[0]).powi(2) + 
+                                      (plot_pos.y - pos[1]).powi(2)).sqrt();
+                            if dist < 0.1 { // Adjust this threshold as needed
+                                if input.pointer.primary_clicked() {
+                                    clicked_node = Some(*i);
+                                }
+                                if input.pointer.primary_down() {
+                                    pos[0] = plot_pos.x;
+                                    pos[1] = plot_pos.y;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Update selected node only if we clicked near one
+            if let Some(node) = clicked_node {
+                self.selected_node = Some(node);
+            }
+
+            // Show info panel
+            if let Some(node) = self.selected_node {
+                egui::Window::new("Node Info")
+                    .show(ctx, |ui| {
+                        if let Some(node_data) = self.network.nodes.get(&node) {
+                            ui.label(format!("Node: {}", node_data.data));
+                            ui.label(format!("Degree: {}", self.network.degree(node)));
+                        }
+                    });
+            }
+        });
+
+        ctx.request_repaint();
+    }
+}
+
 #[derive(Debug, Clone)]
-/// A network that uses a simple adjacency list for edge storage
+/// A network that uses a simple adjacency list for edge storage.
 /// 
 /// # Attributes
 /// 
 /// * nodes: HashMap<usize, Node>
-/// A map of node identifiers to their corresponding Node structs
+/// A map of node identifiers to their corresponding Node structs.
 /// 
 /// * edges: HashMap<usize, Vec<Edge>>
-/// A map of node identifiers to their outgoing edges
+/// A map of node identifiers to their outgoing edges.
 pub struct Network {
     nodes: HashMap<usize, Node>,
     edges: HashMap<usize, Vec<Edge>>,
 }
 impl Network { 
-    /// Creates a new Network
+    /// Creates a new Network.
     /// 
     /// # Returns
     /// 
     /// * Self
-    /// The new Network
+    /// The new Network.
     pub fn new() -> Self { 
         Network { 
             nodes: HashMap::new(), 
@@ -659,33 +956,57 @@ impl Network {
         } 
     } 
     
-    /// Adds a node to the network
+    /// Adds a node to the network.
     /// 
     /// # Parameters
     /// 
     /// * id: usize
     /// The id of the node
+    /// 
+    /// * data: String
+    /// The data associated with the node.
+    /// 
+    /// # Returns
+    /// 
+    /// * Self
+    /// The updated Network.
     pub fn add_node(&mut self, id: usize, data: String) {
         let node = Node { id, data }; self.nodes.insert(id, node); 
     } 
     
-    /// Adds an edge to the network
+    /// Adds an edge to the network.
     /// 
     /// # Parameters
     /// 
     /// * from: usize
     /// The id of the starting node
+    /// 
+    /// * to: usize
+    /// The id of the ending node
+    /// 
+    /// * weight: f64
+    /// The weight of the edge
+    /// 
+    /// # Returns
+    /// 
+    /// * ()
+    /// The updated Network.
     pub fn add_edge(&mut self, from: usize, to: usize, weight: f64) { 
         let edge = Edge { from, to, weight }; 
         self.edges.entry(from).or_insert(Vec::new()).push(edge); 
     } 
     
-    /// Breadth-First Search 
+    /// Breadth-First Search. 
     /// 
     /// # Parameters
     /// 
     /// * start: usize
-    /// The id of the starting node
+    /// The id of the starting node.
+    /// 
+    /// # Returns
+    /// 
+    /// * Vec<usize>
+    /// The BFS path
     pub fn bfs(&self, start: usize) -> Vec<usize> { 
         let mut visited = HashSet::new(); 
         let mut queue = VecDeque::new(); 
@@ -707,12 +1028,20 @@ impl Network {
         result 
     }
     
-    /// Find shortest path using Dijkstra's algorithm 
+    /// Find shortest path using Dijkstra's algorithm.
     /// 
     /// # Parameters
     /// 
     /// * start: usize
-    /// The id of the starting node
+    /// The id of the starting node.
+    /// 
+    /// * end: usize
+    /// The id of the ending node.
+    /// 
+    /// # Returns
+    /// 
+    /// * Option<(Vec<usize>, f64)>
+    /// The shortest path and its distance.
     pub fn shortest_path(&self, start: usize, end: usize) -> Option<(Vec<usize>, f64)> {
         let mut distances: HashMap<usize, f64> = HashMap::new(); 
         let mut previous: HashMap<usize, usize> = HashMap::new(); 
@@ -770,11 +1099,236 @@ impl Network {
             } 
             path.reverse(); 
             Some((path, *distances.get(&end)?)) 
-        } 
+        }
+
+    /// Plots the network using egui.
+    /// 
+    /// # Parameters
+    /// 
+    /// * output_file: &str
+    /// The path to the output file.
+    /// 
+    /// # Returns
+    /// 
+    /// * Result<(), Box<dyn Error>>
+    /// The result of the plot operation.   
+    pub fn static_plot(&self, output_file: &str) -> Result<(), Box<dyn Error>> {
+        let root = BitMapBackend::new(output_file, (800, 600)).into_drawing_area();
+        root.fill(&WHITE)?;
+
+        let mut chart = ChartBuilder::on(&root)
+            .build_cartesian_2d(0f64..800f64, 0f64..600f64)?;
+
+        // Create random positions for all nodes
+        let mut node_positions: HashMap<usize, (f64, f64)> = HashMap::new();
+        for &id in self.nodes.keys() {
+            node_positions.insert(id, (
+                fastrand::f64() * 700.0 + 50.0,
+                fastrand::f64() * 500.0 + 50.0
+            ));
+        }
+
+        // Draw edges
+        for (from, edges) in &self.edges {
+            if let Some(&(from_x, from_y)) = node_positions.get(from) {
+                for edge in edges {
+                    if let Some(&(to_x, to_y)) = node_positions.get(&edge.to) {
+                        let color = if edge.weight > 0.5 { RED } else { BLUE };
+                        chart.plotting_area().draw(&PathElement::new(
+                            vec![(from_x, from_y), (to_x, to_y)],
+                            color.mix(0.5),
+                        ))?;
+                    }
+                }
+            }
+        }
+
+        // Draw nodes
+        for (&id, &(x, y)) in &node_positions {
+            chart.plotting_area().draw(&Circle::new(
+                (x, y),
+                5,
+                ShapeStyle::from(&BLACK).filled(),
+            ))?;
+            
+            if let Some(node) = self.nodes.get(&id) {
+                chart.plotting_area().draw(&Text::new(
+                    node.data.clone(),
+                    (x + 10.0, y),
+                    ("sans-serif", 15).into_font(),
+                ))?;
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Shows the network interactively using egui.
+    /// 
+    /// # Returns
+    /// 
+    /// * Result<(), eframe::Error>
+    /// The result of the show operation.
+    pub fn show_interactive(&self) -> Result<(), eframe::Error> {
+        let options = eframe::NativeOptions {
+            viewport: egui::ViewportBuilder::default()
+                .with_inner_size([800.0, 600.0]),
+            ..Default::default()
+        };
+
+        eframe::run_native(
+            "Network Visualization",
+            options,
+            Box::new(|_cc| Ok(Box::new(SimpleNetworkVisualizer::new(self))))
+        )
+    }
+}
+
+/// A simple network visualizer using egui.
+/// 
+/// # Attributes
+/// 
+/// * network: &'a Network
+/// The network to visualize.
+/// 
+/// * node_positions: HashMap<usize, [f64; 2]>
+/// The positions of the nodes.
+/// 
+/// * selected_node: Option<usize>
+/// The id of the selected node.
+/// 
+/// * dragging: Option<usize>
+/// The id of the node being dragged.   
+struct SimpleNetworkVisualizer<'a> {
+    network: &'a Network,
+    node_positions: HashMap<usize, [f64; 2]>,
+    selected_node: Option<usize>,
+    dragging: Option<usize>,
+}
+
+impl<'a> SimpleNetworkVisualizer<'a> {
+    fn new(network: &'a Network) -> Self {
+        let mut node_positions = HashMap::new();
+        for &id in network.nodes.keys() {
+            node_positions.insert(id, [
+                fastrand::f64() * 700.0 + 50.0,
+                fastrand::f64() * 500.0 + 50.0
+            ]);
+        }
+        Self {
+            network,
+            node_positions,
+            selected_node: None,
+            dragging: None,
+        }
+    }
+}
+
+impl<'a> eframe::App for SimpleNetworkVisualizer<'a> {
+    /// Updates the network visualizer.
+    /// 
+    /// # Parameters
+    /// 
+    /// * ctx: &egui::Context
+    /// The context of the application.
+    /// 
+    /// * _frame: &mut eframe::Frame
+    /// The frame of the application.
+    /// 
+    /// # Returns
+    /// 
+    /// * ()
+    /// The updated network visualizer.
+    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        egui::CentralPanel::default().show(ctx, |ui| {
+            let input = ui.input(|i| i.clone());
+            
+            let plot = Plot::new("network_plot")
+                .allow_drag(false)
+                .allow_zoom(true)
+                .include_y(0.0)
+                .include_y(600.0)
+                .include_x(0.0)
+                .include_x(800.0);
+
+            let mut clicked_node = None;
+
+            plot.show(ui, |plot_ui| {
+                // Draw edges
+                for (from, edges) in &self.network.edges {
+                    if let Some(&[from_x, from_y]) = self.node_positions.get(from) {
+                        for edge in edges {
+                            if let Some(&[to_x, to_y]) = self.node_positions.get(&edge.to) {
+                                let line = Line::new(PlotPoints::new(vec![
+                                    [from_x, from_y],
+                                    [to_x, to_y],
+                                ])).width(if edge.weight > 0.5 { 2.0 } else { 1.0 });
+                                plot_ui.line(line);
+                            }
+                        }
+                    }
+                }
+
+                // Draw nodes and handle interaction
+                if let Some(pointer_pos) = input.pointer.latest_pos() {
+                    if let Some(plot_pos) = plot_ui.pointer_coordinate() {
+                        for (i, pos) in &mut self.node_positions {
+                            let points = Points::new(vec![[pos[0], pos[1]]])
+                                .radius(5.0)
+                                .color(if Some(*i) == self.selected_node {
+                                    egui::Color32::RED
+                                } else {
+                                    egui::Color32::BLUE
+                                });
+                            plot_ui.points(points);
+
+                            let dist = ((plot_pos.x - pos[0]).powi(2) + 
+                                      (plot_pos.y - pos[1]).powi(2)).sqrt();
+                            if dist < 0.1 {
+                                if input.pointer.primary_clicked() {
+                                    clicked_node = Some(*i);
+                                }
+                                if input.pointer.primary_down() {
+                                    pos[0] = plot_pos.x;
+                                    pos[1] = plot_pos.y;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            if let Some(node) = clicked_node {
+                self.selected_node = Some(node);
+            }
+
+            if let Some(node) = self.selected_node {
+                egui::Window::new("Node Info")
+                    .show(ctx, |ui| {
+                        if let Some(node_data) = self.network.nodes.get(&node) {
+                            ui.label(format!("Node: {}", node_data.data));
+                            let degree = self.network.edges.get(&node)
+                                .map(|edges| edges.len())
+                                .unwrap_or(0);
+                            ui.label(format!("Degree: {}", degree));
+                        }
+                    });
+            }
+        });
+
+        ctx.request_repaint();
     } 
+} 
     
 
 
+
+/// Example usage of the Network struct.
+/// 
+/// # Returns
+/// 
+/// * ()
+/// The example usage of the Network struct.    
 pub fn example() {
 
     // ###Hybrid Network###
@@ -801,6 +1355,12 @@ pub fn example() {
         println!("Total distance: {}", distance);
     }
 
+    // Plot the network
+    network.static_plot("temp/hybrid_network.png").unwrap();
+
+    // Show interactive plot
+    network.show_interactive().unwrap();
+
     // ###Network###
     let mut network = Network::new(); 
     // Add nodes 
@@ -821,4 +1381,10 @@ pub fn example() {
         println!("Shortest path from 1 to 4: {:?}", path); 
         println!("Total distance: {}", distance); 
     }
+
+    // Plot the network
+    network.static_plot("temp/network.png").unwrap();
+
+    // Show interactive plot
+    network.show_interactive().unwrap();
 }
