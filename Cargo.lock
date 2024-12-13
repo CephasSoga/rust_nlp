@@ -1473,6 +1473,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "env_logger"
+version = "0.10.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4cd405aab171cb85d6735e5c8d9db038c17d3ca007a4d2c25f337935c3d90580"
+dependencies = [
+ "humantime",
+ "is-terminal",
+ "log",
+ "regex",
+ "termcolor",
+]
+
+[[package]]
 name = "epaint"
 version = "0.29.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2131,6 +2144,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "df3b46402a9d5adb4c86a0cf463f42e19994e3ee891101b1841f30a545cb49a9"
 
 [[package]]
+name = "humantime"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9a3a5bfb195931eeb336b2a7b4d761daec841b97f947d34394601737a7bba5e4"
+
+[[package]]
 name = "hyper"
 version = "0.14.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2431,6 +2450,17 @@ name = "ipnet"
 version = "2.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ddc24109865250148c2e0f3d25d4f0f479571723792d3802153c60922a4fb708"
+
+[[package]]
+name = "is-terminal"
+version = "0.4.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "261f68e344040fbd0edea105bef17c66edf46f984ddb1115b775ce31be948f4b"
+dependencies = [
+ "hermit-abi 0.4.0",
+ "libc",
+ "windows-sys 0.52.0",
+]
 
 [[package]]
 name = "is_terminal_polyfill"
@@ -3795,6 +3825,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "rust-nlp"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "dotenv",
+ "eframe",
+ "egui_plot",
+ "env_logger",
+ "fastrand",
+ "indicatif 0.17.9",
+ "log",
+ "ndarray 0.16.1",
+ "num_cpus",
+ "plotters",
+ "rayon",
+ "regex",
+ "reqwest",
+ "rust-bert",
+ "serde",
+ "serde_json",
+ "tch",
+ "tokenizers",
+ "tokio",
+]
+
+[[package]]
 name = "rust_tokenizers"
 version = "7.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3966,30 +4023,6 @@ name = "semver"
 version = "1.0.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "61697e0a1c7e512e84a621326239844a24d8207b4669b41bc18b32ea5cbf988b"
-
-[[package]]
-name = "sentiment_analysis"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "dotenv",
- "eframe",
- "egui_plot",
- "fastrand",
- "indicatif 0.17.9",
- "ndarray 0.16.1",
- "num_cpus",
- "plotters",
- "rayon",
- "regex",
- "reqwest",
- "rust-bert",
- "serde",
- "serde_json",
- "tch",
- "tokenizers",
- "tokio",
-]
 
 [[package]]
 name = "serde"

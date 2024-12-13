@@ -8,6 +8,7 @@ mod topic;
 mod pattern;
 mod network;
 mod word2vec;
+mod logging;
 
 use std::env;
 use std::clone::Clone;
@@ -28,6 +29,8 @@ use local::{ModelWrapper, ModelConfig, ContentPolarity, ModelBuilder};
 use topic::{TopicModel, TopicModelConfig};
 use network::{HybridNetwork, Network};
 use word2vec::{MultiThreadWord2Vec, single_thread_example, multi_thread_example, from_file_example};
+use pattern::{Pattern, PatternStats};
+use logging::{Logger, LogConfig, LevelFilter, Level};
 
 #[derive(Debug, Clone, Copy)]
 /// The polarity of a piece of content.
@@ -356,6 +359,10 @@ async fn main() {
     //});
 
     time_it!("Network analysis", {
+        let log_config = LogConfig::new("logs/network.log".to_string(), LevelFilter::Info);
+        let logger = Logger::new(log_config);
+
+        logger.log_event(Level::Info, "Starting network analysis", None, None);
         network::example();
     });
 }

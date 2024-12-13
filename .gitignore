@@ -3,3 +3,4 @@
 **/test*
 models/**/*
 temp/**/*
+logs/**/*

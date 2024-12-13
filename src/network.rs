@@ -1355,11 +1355,12 @@ pub fn example() {
         println!("Total distance: {}", distance);
     }
 
+    //# Uncomment to see the network plots#
     // Plot the network
-    network.static_plot("temp/hybrid_network.png").unwrap();
+    //network.static_plot("temp/hybrid_network.png").unwrap();
 
     // Show interactive plot
-    network.show_interactive().unwrap();
+    //network.show_interactive().unwrap();
 
     // ###Network###
     let mut network = Network::new(); 
@@ -1382,9 +1383,10 @@ pub fn example() {
         println!("Total distance: {}", distance); 
     }
 
-    // Plot the network
-    network.static_plot("temp/network.png").unwrap();
 
+    //# Uncomment to see the network plots#
+    // Plot the network
+    //network.static_plot("temp/network.png").unwrap();
     // Show interactive plot
-    network.show_interactive().unwrap();
+    //network.show_interactive().unwrap();
 }

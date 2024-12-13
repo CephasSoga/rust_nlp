@@ -1,5 +1,5 @@
 [package]
-name = "sentiment_analysis"
+name = "rust-nlp"
 version = "0.1.0"
 edition = "2021"
 
@@ -21,4 +21,7 @@ indicatif = "0.17"      # Progress bar library for Rust
 num_cpus = "1.16"       # For getting number of CPU cores
 plotters = "0.3"        # Plotting library for Rust
 eframe = "0.29.0"       # egui framework
-egui_plot = "0.29.0"      # plotting support for egui
+egui_plot = "0.29.0"    # plotting support for egui
+log = "0.4"             # Logging library for Rust
+env_logger = "0.10"     # One possible logging implementation
+chrono = "0.4"          # For timestamp formatting
